@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Security.Cryptography;
@@ -10,52 +11,13 @@ namespace SimhashLib
     {
         public const int FpSize = 64;
        
-        public ulong Value { get; set; }
-
-        public Simhash()
-        {
-        }
-
-        public Simhash(Simhash simHash)
-        {
-            Value = simHash.Value;
-        }
-
-        public Simhash(ulong fingerPrint)
-        {
-            Value = fingerPrint;
-        }
-
-        public void GenerateSimhash(string content)
+        public Hash GenerateSimhash(string content)
         {
             var shingles = Shingling.Tokenize(content);
-            ComputeHash(shingles);
+            return ComputeHash(shingles);
         }
 
-        public void ComputeHash(List<string> features)
-        {
-            BuildByFeaturesMd5(features);
-        }
-
-        public long GetFingerprintAsLong()
-        {
-            return Converters.ConvertUlongToLong(Value);
-        }
-
-        public int Distance(Simhash another)
-        {
-            var x = (Value ^ another.Value) & (ulong.MaxValue);
-            var ans = 0;
-            while (x > 0)
-            {
-                ans++;
-                x &= x - 1;
-            }
-
-            return ans;
-        }
-
-        private void BuildByFeaturesMd5(List<string> features)
+        public Hash ComputeHash(List<string> features)
         {
             var v = SetupFingerprint();
             var masks = SetupMasks();
@@ -74,11 +36,15 @@ namespace SimhashLib
                 }
             }
 
-            Value = MakeFingerprint(v, masks);
+            return MakeFingerprint(v, masks);
         }
 
+        public long GetFingerprintAsLong(ulong value)
+        {
+            return Converters.ConvertUlongToLong(value);
+        }
 
-        private ulong MakeFingerprint(int[] v, ulong[] masks)
+        private Hash MakeFingerprint(int[] v, ulong[] masks)
         {
             ulong ans = 0;
             for (var i = 0; i < FpSize; i++)
@@ -89,7 +55,7 @@ namespace SimhashLib
                 }
             }
 
-            return ans;
+            return new Hash(ans);
         }
 
         private int[] SetupFingerprint()
@@ -137,6 +103,46 @@ namespace SimhashLib
         {
             var bigNumber = BigInteger.Parse(x, NumberStyles.AllowHexSpecifier);
             return bigNumber;
+        }
+        
+        public readonly struct Hash : IEquatable<Hash>
+        {
+            public ulong Value { get; }
+
+            public Hash(ulong value)
+            {
+                Value = value;
+            }
+
+            public bool Equals(Hash other)
+            {
+                return Value == other.Value;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is Hash other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return Value.GetHashCode();
+            }
+
+            public int Distance(Hash another)
+            {
+                var x = (Value ^ another.Value) & (ulong.MaxValue);
+                var ans = 0;
+                while (x > 0)
+                {
+                    ans++;
+                    x &= x - 1;
+                }
+
+                return ans;
+            }
+            
+            public override string ToString() => Value.ToString();
         }
     }
 }

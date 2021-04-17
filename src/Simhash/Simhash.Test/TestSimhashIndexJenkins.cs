@@ -1,17 +1,15 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SimhashLib;
+using Xunit;
 
-namespace SimhashTests
+namespace Simhash.Test
 {
-    [TestClass]
     public class TestSimhashIndexJenkins
     {
         //1=14473962, 2=14454106, 3=14454124, 4=14454110
         private Dictionary<long, string> testData = new Dictionary<long, string>();
         
-        [TestInitialize]
-        public void SetUp()
+        public TestSimhashIndexJenkins()
         {
             testData.Add(1, "Skype is bringing its promising real-time translation tool to millions more users by adding six new voice languages and rolling it into the Windows desktop app.\r\n\r\nThe Skype Translator tool, which has been in preview since December 2014, is rolling out to all desktop users within the Windows app.\r\n\r\nThe app can now convert video calls in English, French, German, Italian, Mandarin and Spanish.\r\n\r\nIt\u2019ll also convert message text in over 50 languages and, thanks to the machine learning tech, both tools will get better the more people use it.\r\n\r\nThe new version of the Skype for Windows app will now feature a translator icon, which will inform you it\u2019s all set to be called into action.\r\n\r\nDuring the preview period Skype points out plenty of inspirational uses for the tool.\r\n\r\nIt says a student planned an entire study year in China using Translator, while helping a newly engaged, multicultural couple get to know each other\u2019s parents.\r\n\r\nMeanwhile, a PhD student used it to consult with experts around the world, while a non-profit worker was able to bring in donations.\r\n\r\nSee also: Windows 10 review\r\n\r\n\u201cIt has been a long-time dream at Skype to break down language barriers and bring everyone across the globe closer together. Researchers, engineers, and many others across Microsoft have been working hard to make this dream a reality and we are looking forward to bringing this preview technology to more devices,\u201d the company said (via Engadget)\r\n\r\nCheck out the video below for information on how to set it up.");
             testData.Add(2, "Written by: Gary Morrow \n 10/01/15 - 2:15 PM EDT \n \n \nTickers in this article: \n  IBM \n \n   \nNEW YORK (TheStreet) -- IBM  is drifting lower at midday on Thursday after beginning the session slightly higher. \n\nAt this morning's early high, the stock bumped up against heavy trend line resistance that capped the August and September highs. With today's rejection at this key level, IBM is becoming vulnerable to further downside. For IBM investors, an upcoming retest of major support will be critical. \n  As October begins, it appears IBM is headed for its third straight lower monthly low. This current downtrend, which began on July 21 with a huge downside gap, has dropped shares nearly 20%. Late last month, the initial down leg of the post-earnings breakdown found support near $140. IBM began to rebound on Aug. 26, but the upside was well-contained. With very light bullish interest, despite the steep decline from the summer highs, the stock was unable to move past its massive Aug. 24 opening gap. Shares have been trading in a tight range since while the major indices went on to recover most of the mid-August selloff. The significant lagging action continues to weigh on Big Blue and will likely drive it lower in the near term.  IBM will soon retest a major support zone between the $141-to-$138 area. The stock's August spike low marks the upper band of this area while the 1999 peak sits at $138.35. On a long-term chart, the 1999 high near $138.50 was a major turning point. This level was not taken out until the fourth quarter of 2010. Once through, IBM began a monster bull run that carried shares over 55% above the stock's 1999 high. \nInvestors should keep a close on eye on this zone. A solid base here, along with a divergent moving average convergence/divergence indicator , could provide a very attractive entry opportunity for patient bulls.");
@@ -21,11 +19,11 @@ namespace SimhashTests
 
         private SimhashIndex SetUpIndex(int kValue)
         {
-            var objs = new Dictionary<long, Simhash.Hash>();
+            var objs = new Dictionary<long, SimhashLib.Simhash.Hash>();
 
             foreach (var it in testData)
             {
-                var simHash = new Simhash();
+                var simHash = new SimhashLib.Simhash();
                 var features = Shingling.Tokenize(it.Value, 3);
                 objs.Add(it.Key, simHash.ComputeHash(features));
 
@@ -33,28 +31,28 @@ namespace SimhashTests
             return new SimhashIndex(objs: objs, k: kValue);
         }
 
-        [TestMethod]
+        [Fact]
         public void Get_Near_Dup_Hash_Jenkins_Not_Close()
         {
             var index = SetUpIndex(1);
-            var s = new Simhash();
+            var s = new SimhashLib.Simhash();
             var hash = s.GenerateSimhash("This is not even close to the text that is loaded by default");
             var dups = index.GetNearDups(hash);
-            Assert.AreEqual(0, dups.Count);
+            Assert.Empty(dups);
 
         }
 
-        [TestMethod]
+        [Fact]
         public void Get_Near_Dup_Hash_Jenkins_Find_One()
         {
             var index = SetUpIndex(1);
 
-            var s = new Simhash();
+            var s = new SimhashLib.Simhash();
             var features = Shingling.Tokenize(testData[1], 3);
             var hash = s.ComputeHash(features);
 
             var dups = index.GetNearDups(hash);
-            Assert.AreEqual(1, dups.Count);
+            Assert.Single(dups);
         }
     }
 }

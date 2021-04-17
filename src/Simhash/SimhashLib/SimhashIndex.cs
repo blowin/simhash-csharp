@@ -14,7 +14,7 @@ namespace SimhashLib
         private static List<int> _offsets;
 
         //whitepaper says 64 and 3 are optimal. the ash tray says you've been up all night...
-        public SimhashIndex(Dictionary<long, Simhash> objs, int f = 64, int k = 3)
+        public SimhashIndex(Dictionary<long, Simhash.Hash> objs, int f = 64, int k = 3)
         {
             _kDistance = k;
             _fpSize = f;
@@ -29,13 +29,14 @@ namespace SimhashLib
             }
         }
 
-        public HashSet<long> GetNearDups(Simhash simhash)
+        public HashSet<long> GetNearDups(Simhash.Hash simhash)
         {
             /*
             "simhash" is an instance of Simhash
             return a list of obj_id, which is in type of long (for now)
             */
-            if (Simhash.FpSize != _fpSize) throw new Exception();
+            if (Simhash.FpSize != _fpSize) 
+                throw new Exception();
             
             var ans = new HashSet<long>();
 
@@ -49,7 +50,7 @@ namespace SimhashLib
                     var parts = dup.Split(',');
                     var fp = Convert.ToUInt64(parts[0]);
                     var objId = Convert.ToInt64(parts[1]);
-                    var sim2 = new Simhash(fp);
+                    var sim2 = new Simhash.Hash(fp);
                     var d = simhash.Distance(sim2);
                     if (d <= _kDistance)
                     {
@@ -60,7 +61,7 @@ namespace SimhashLib
             return ans;
         }
         
-        public void Add(long objId, Simhash simhash)
+        public void Add(long objId, Simhash.Hash simhash)
         {
             foreach (var key in GetEnumerableKeys(simhash))
             {
@@ -78,7 +79,7 @@ namespace SimhashLib
             }
         }
 
-        public void Delete(long objId, Simhash simhash)
+        public void Delete(long objId, Simhash.Hash simhash)
         {
             foreach (var key in GetEnumerableKeys(simhash))
             {
@@ -106,12 +107,12 @@ namespace SimhashLib
             return ans;
         }
 
-        public List<string> GetListKeys(Simhash simhash)
+        public List<string> GetListKeys(Simhash.Hash simhash)
         {
             return GetEnumerableKeys(simhash).ToList();
         }
         
-        private static IEnumerable<string> GetEnumerableKeys(Simhash simhash)
+        private static IEnumerable<string> GetEnumerableKeys(Simhash.Hash simhash)
         {
             for (var i = 0; i < _offsets.Count; i++)
             {
