@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.HashFunction;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Security.Cryptography;
@@ -11,22 +9,11 @@ namespace SimhashLib
     public class Simhash
     {
         public const int FpSize = 64;
-        
-        public enum HashingType
-        {
-            MD5,
-            Jenkins
-        }
-        
+       
         public ulong Value { get; set; }
 
         public Simhash()
         {
-        }
-
-        public Simhash(HashingType hashingType)
-        {
-            hashAlgorithm = hashingType;
         }
 
         public Simhash(Simhash simHash)
@@ -45,20 +32,9 @@ namespace SimhashLib
             ComputeHash(shingles);
         }
 
-        //playing around with hashing algorithms. turns out md5 is a touch slow.
-        private HashingType hashAlgorithm = HashingType.Jenkins;
-
         public void ComputeHash(List<string> features)
         {
-            switch (hashAlgorithm)
-            {
-                case HashingType.MD5:
-                    BuildByFeaturesMd5(features);
-                    break;
-                default:
-                    BuildByFeaturesJenkins(features);
-                    break;
-            }
+            BuildByFeaturesMd5(features);
         }
 
         public long GetFingerprintAsLong()
@@ -77,25 +53,6 @@ namespace SimhashLib
             }
 
             return ans;
-        }
-
-        private void BuildByFeaturesJenkins(List<string> features)
-        {
-            var v = SetupFingerprint();
-            var masks = SetupMasks();
-
-            foreach (var feature in features)
-            {
-                var h = ComputeJenkinsHash(feature);
-                var w = 1;
-                for (var i = 0; i < FpSize; i++)
-                {
-                    var result = h & masks[i];
-                    v[i] += (result > 0) ? w : -w;
-                }
-            }
-
-            Value = MakeFingerprint(v, masks);
         }
 
         private void BuildByFeaturesMd5(List<string> features)
@@ -151,16 +108,6 @@ namespace SimhashLib
             }
 
             return masks;
-        }
-
-        public ulong ComputeJenkinsHash(string x)
-        {
-            var jenkinsLookup3 = new JenkinsLookup3(64);
-            var resultBytes = jenkinsLookup3.ComputeHash(x);
-
-            var y = BitConverter.ToUInt64(resultBytes, 0);
-
-            return y;
         }
 
         private BigInteger HashFuncMd5(string x)

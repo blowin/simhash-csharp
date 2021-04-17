@@ -1,22 +1,11 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimhashLib;
-using System.Numerics;
 
 namespace SimhashTests
 {
     [TestClass]
     public class TestHashing
     {
-        [TestMethod]
-        public void Get_Hash_Code_Special_Hashing_To_64bit()
-        {
-            var eval = "aaa";
-            var simHash = new Simhash();
-            var fromDb = simHash.ComputeJenkinsHash(eval);
-            Assert.AreEqual(18323053351575752945, fromDb);
-        }
-
         [TestMethod]
         public void Hash_To_String_Value()
         {

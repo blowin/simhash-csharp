@@ -1,10 +1,6 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using SimhashLib;
-using System.Numerics;
-using System.Text;
-using System.Linq;
 
 namespace SimhashTests
 {
@@ -15,7 +11,7 @@ namespace SimhashTests
         [TestMethod]
         public void Value_By_String()
         {
-            var simHash = new Simhash(hashingType:Simhash.HashingType.MD5);
+            var simHash = new Simhash();
             simHash.GenerateSimhash("aaa bbb test test testing.happy time = -).");
             ulong expected = 5683413558821905382;
             Assert.AreEqual(expected, simHash.Value);
@@ -26,7 +22,7 @@ namespace SimhashTests
         public void Value()
         {
             var features = new List<string>() { "aaa", "bbb" };
-            var simHash = new Simhash(hashingType:Simhash.HashingType.MD5);
+            var simHash = new Simhash();
             simHash.ComputeHash(features);
             ulong expected = 8637903533912358349;
             Assert.AreEqual(expected, simHash.Value);
@@ -36,7 +32,7 @@ namespace SimhashTests
         public void Value_Control()
         {
             var features = new List<string>() { "aaa" };
-            var simHash = new Simhash(hashingType:Simhash.HashingType.MD5);
+            var simHash = new Simhash();
             simHash.ComputeHash(features);
             ulong expected = 7483809945577191432;
             Assert.AreEqual(expected, simHash.Value);
