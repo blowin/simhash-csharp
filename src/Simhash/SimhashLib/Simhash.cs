@@ -20,7 +20,7 @@ namespace SimhashLib
             return ComputeHash<Md5Hash, Md5HashResult>(features, new Md5Hash());
         }
 
-        public static SimhashResult ComputeHash<THash, TRes>(List<string> features, THash hash)
+        public SimhashResult ComputeHash<THash, TRes>(List<string> features, THash hash)
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
