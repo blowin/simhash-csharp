@@ -6,6 +6,8 @@ namespace SimhashLib
 {
     public readonly struct Simhash : IHash<SimhashResult>
     {
+        private static readonly ulong[] Mask = BuildMask();
+        
         public const int FpSize = 64;
         
         public SimhashResult ComputeHash(string content)
@@ -24,49 +26,39 @@ namespace SimhashLib
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
-            var fingerprint = BuildFingerprint();
-            var masks = BuildMask();
+            var fingerprint = new int[FpSize];
 
             foreach (var feature in features)
             {
-                //this is using MD5 which is REALLY slow
                 var h = hash.ComputeHash(feature);
                 const int w = 1;
                 for (var i = 0; i < FpSize; i++)
                 {
-                    //convert to BigInt so we can use BitWise
-                    var bMask = masks[i];
+                    var bMask = Mask[i];
                     var result = h.BitwiseAnd(bMask);
                     fingerprint[i] += result.GreatThanZero ? w : -w;
                 }
             }
 
-            return MakeFingerprint(fingerprint, masks);
+            return FingerprintToSimhashResult(fingerprint);
         }
         
-        private static SimhashResult MakeFingerprint(int[] v, ulong[] masks)
+        private static SimhashResult FingerprintToSimhashResult(int[] fingerprint)
         {
             ulong ans = 0;
             for (var i = 0; i < FpSize; i++)
             {
-                if (v[i] >= 0)
-                    ans |= masks[i];
+                if (fingerprint[i] >= 0)
+                    ans |= Mask[i];
             }
 
             return new SimhashResult(ans);
         }
 
-        private static int[] BuildFingerprint()
-        {
-            var v = new int[FpSize];
-            for (var i = 0; i < v.Length; i++) 
-                v[i] = 0;
-            return v;
-        }
-
         private static ulong[] BuildMask()
         {
             var masks = new ulong[FpSize];
+            
             for (var i = 0; i < masks.Length; i++)
                 masks[i] = (ulong) 1 << i;
 

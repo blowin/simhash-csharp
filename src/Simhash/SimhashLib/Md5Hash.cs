@@ -24,6 +24,7 @@ namespace SimhashLib
     {
         public Md5HashResult ComputeHash(string feature)
         {
+            //this is using MD5 which is REALLY slow
             var hexValue = HashToString(feature);
             var nasty = HashStringToBigNasty(hexValue);
             return new Md5HashResult(nasty);
