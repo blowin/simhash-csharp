@@ -6,7 +6,7 @@ namespace Simhash.Test
 {
     public class TestSimhashIndexMD5
     {
-        private Dictionary<long, SimhashLib.Simhash.Hash> objs = new Dictionary<long, SimhashLib.Simhash.Hash>();
+        private Dictionary<long, SimhashResult> objs = new Dictionary<long, SimhashResult>();
         private SimhashIndex index;
         private Dictionary<long, string> testData = new Dictionary<long, string>();
         
@@ -17,11 +17,11 @@ namespace Simhash.Test
             testData.Add(3, "This is simhash test.");
             testData.Add(4, "How are you i am fine. blar blar blar blar blar thank1");
 
+            var simHash = new SimhashLib.Simhash();
+            
             foreach(var it in testData)
             {
-                var simHash = new SimhashLib.Simhash();
                 objs.Add(it.Key, simHash.GenerateSimhash(it.Value));
-                
             }
             index = new SimhashIndex(objs: objs, k: 10);
            
@@ -30,9 +30,11 @@ namespace Simhash.Test
         [Fact]
         public void Offset_Creation_With_Ten()
         {
-            var dict = new Dictionary<long, SimhashLib.Simhash.Hash>();
+            var dict = new Dictionary<long, SimhashResult>();
             var simHashIndex = new SimhashIndex(dict, k: 10);
+            
             var offsets = simHashIndex.MakeOffsets();
+            
             Assert.Equal(0, offsets[0]);
             Assert.Equal(10, offsets[2]);
             Assert.True(offsets.Count == 11);
@@ -41,9 +43,11 @@ namespace Simhash.Test
         [Fact]
         public void Offset_Creation_With_Two()
         {
-            var dict = new Dictionary<long, SimhashLib.Simhash.Hash>();
+            var dict = new Dictionary<long, SimhashResult>();
             var simHashIndex = new SimhashIndex(dict, k: 2);
+            
             var offsets = simHashIndex.MakeOffsets();
+            
             Assert.Equal(0, offsets[0]);
             Assert.Equal(42, offsets[2]);
             Assert.True(offsets.Count == 3);
@@ -55,7 +59,7 @@ namespace Simhash.Test
             var testdata = new Dictionary<long, string>();
             testdata.Add(1, "How are you? I Am fine. blar blar blar blar blar Thanks.");
 
-            var simHashObjs = new Dictionary<long, SimhashLib.Simhash.Hash>();
+            var simHashObjs = new Dictionary<long, SimhashResult>();
             foreach (var it in testdata)
             {
                 var simHash = new SimhashLib.Simhash();
@@ -81,31 +85,28 @@ namespace Simhash.Test
         [Fact]
         public void Get_Near_Dup_Hash()
         {
-            var s1 = new SimhashLib.Simhash();
-            var hash = s1.GenerateSimhash("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
+            var simhash = new SimhashLib.Simhash();
+            
+            var hash = simhash.GenerateSimhash("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
             var dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var s2 = new SimhashLib.Simhash();
-            var hash2 = s2.GenerateSimhash(testData[1]);
+            var hash2 = simhash.GenerateSimhash(testData[1]);
             index.Delete(1, hash2);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var s3 = new SimhashLib.Simhash();
-            var hash3 = s3.GenerateSimhash(testData[1]);
+            var hash3 = simhash.GenerateSimhash(testData[1]);
             index.Delete(1, hash3);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var s4 = new SimhashLib.Simhash();
-            var hash4 = s4.GenerateSimhash(testData[1]);
+            var hash4 = simhash.GenerateSimhash(testData[1]);
             index.Add(1, hash4);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var s5 = new SimhashLib.Simhash();
-            var hash5 = s5.GenerateSimhash(testData[1]);
+            var hash5 = simhash.GenerateSimhash(testData[1]);
             index.Add(1, hash5);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);

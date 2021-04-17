@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using SimhashLib;
 using Xunit;
 
@@ -19,12 +20,14 @@ namespace Simhash.Test
 
         private SimhashIndex SetUpIndex(int kValue)
         {
-            var objs = new Dictionary<long, SimhashLib.Simhash.Hash>();
+            var objs = new Dictionary<long, SimhashResult>();
 
+            var simHash = new SimhashLib.Simhash();
+            var builder = new StringBuilder();
+            
             foreach (var it in testData)
             {
-                var simHash = new SimhashLib.Simhash();
-                var features = Shingling.Tokenize(it.Value, 3);
+                var features = Shingling.Tokenize(it.Value, builder.Clear(), 3);
                 objs.Add(it.Key, simHash.ComputeHash(features));
 
             }
@@ -36,8 +39,10 @@ namespace Simhash.Test
         {
             var index = SetUpIndex(1);
             var s = new SimhashLib.Simhash();
+            
             var hash = s.GenerateSimhash("This is not even close to the text that is loaded by default");
             var dups = index.GetNearDups(hash);
+            
             Assert.Empty(dups);
 
         }
@@ -48,10 +53,11 @@ namespace Simhash.Test
             var index = SetUpIndex(1);
 
             var s = new SimhashLib.Simhash();
-            var features = Shingling.Tokenize(testData[1], 3);
+            var features = Shingling.Tokenize(testData[1], new StringBuilder(),3);
+            
             var hash = s.ComputeHash(features);
-
             var dups = index.GetNearDups(hash);
+            
             Assert.Single(dups);
         }
     }

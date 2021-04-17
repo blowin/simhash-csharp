@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SimhashLib
 {
@@ -14,7 +15,7 @@ namespace SimhashLib
         private static List<int> _offsets;
 
         //whitepaper says 64 and 3 are optimal. the ash tray says you've been up all night...
-        public SimhashIndex(Dictionary<long, Simhash.Hash> objs, int f = 64, int k = 3)
+        public SimhashIndex(Dictionary<long, SimhashResult> objs, int f = 64, int k = 3)
         {
             _kDistance = k;
             _fpSize = f;
@@ -24,12 +25,10 @@ namespace SimhashLib
             _offsets = MakeOffsets();
 
             foreach (var q in objs)
-            {
                 Add(q.Key, q.Value);
-            }
         }
 
-        public HashSet<long> GetNearDups(Simhash.Hash simhash)
+        public HashSet<long> GetNearDups(SimhashResult simhash)
         {
             /*
             "simhash" is an instance of Simhash
@@ -50,7 +49,7 @@ namespace SimhashLib
                     var parts = dup.Split(',');
                     var fp = Convert.ToUInt64(parts[0]);
                     var objId = Convert.ToInt64(parts[1]);
-                    var sim2 = new Simhash.Hash(fp);
+                    var sim2 = new SimhashResult(fp);
                     var d = simhash.Distance(sim2);
                     if (d <= _kDistance)
                     {
@@ -61,29 +60,30 @@ namespace SimhashLib
             return ans;
         }
         
-        public void Add(long objId, Simhash.Hash simhash)
+        public void Add(long objId, SimhashResult simhash)
         {
+            var store = new StringBuilder(41);
             foreach (var key in GetEnumerableKeys(simhash))
             {
-                var v = string.Format("{0},{1}", simhash.Value, objId);
-                if (!_bucket.ContainsKey(key))
+                var v = BuildKey(objId, simhash, store);
+                if (!_bucket.TryGetValue(key, out var values))
                 {
                     var bucketHashSet = new HashSet<string>() { v };
                     _bucket.Add(key, bucketHashSet);
                 }
                 else
                 {
-                    var values = _bucket[key];
                     values.Add(v);
                 }
             }
         }
-
-        public void Delete(long objId, Simhash.Hash simhash)
+        
+        public void Delete(long objId, SimhashResult simhash)
         {
+            var store = new StringBuilder(41);
             foreach (var key in GetEnumerableKeys(simhash))
             {
-                var v = string.Format("{0},{1}", simhash.Value, objId);
+                var v = BuildKey(objId, simhash, store);
                 if (_bucket.ContainsKey(key))
                 {
                     _bucket[key].Remove(v);
@@ -107,32 +107,36 @@ namespace SimhashLib
             return ans;
         }
 
-        public List<string> GetListKeys(Simhash.Hash simhash)
+        public List<string> GetListKeys(SimhashResult simhash)
         {
             return GetEnumerableKeys(simhash).ToList();
         }
         
-        private static IEnumerable<string> GetEnumerableKeys(Simhash.Hash simhash)
+        private static IEnumerable<string> GetEnumerableKeys(SimhashResult simhash)
         {
+            if(_offsets.Count <= 0)
+                yield break;
+
+            var store = new StringBuilder(41);
+            
             for (var i = 0; i < _offsets.Count; i++)
             {
-                int off;
-                if (i == (_offsets.Count - 1))
-                {
-                    off = (FpSizeStatic - _offsets[i]);
-                }
-                else
-                {
-                    off = _offsets[i + 1] - _offsets[i];
-                }
+                var off = i == (_offsets.Count - 1) ? 
+                    FpSizeStatic - _offsets[i] : 
+                    _offsets[i + 1] - _offsets[i];
 
                 var m = (Math.Pow(2, off)) - 1;
                 var m64 = Convert.ToUInt64(m);
                 var offset64 = Convert.ToUInt64(_offsets[i]);
                 var c = simhash.Value >> _offsets[i] & m64;
-
-                yield return string.Format("{0},{1}", c, i);
+                
+                yield return store.Clear().Append(c).Append(',').Append(i).ToString();
             }
+        }
+        
+        private static string BuildKey(long objId, SimhashResult simhash, StringBuilder builder)
+        {
+            return builder.Clear().Append(simhash.Value).Append(',').Append(objId).ToString();
         }
     }
 }

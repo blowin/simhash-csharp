@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SimhashLib
 {
     public static class Shingling
     {
+        private static readonly Regex ScrubRegex = new Regex(@"[\w\u4e00-\u9fcc]+", RegexOptions.Compiled);
+        
         public static List<string> Slide(string content, int width = 4)
         {
-            var listOfShingles = new List<string>();
+            var listOfShingles = width > 0 ? new List<string>(content.Length / width + 1) : new List<string>();
             for (var i = 0; i < (content.Length + 1 - width); i++)
             {
                 var piece = content.Substring(i, width);
@@ -16,23 +19,20 @@ namespace SimhashLib
             return listOfShingles;
         }
         
-        public static string Scrub(string content)
+        public static StringBuilder Scrub(string content, StringBuilder builder)
         {
-            var matches = Regex.Matches(content, @"[\w\u4e00-\u9fcc]+");
-            var ans = "";
+            var matches = ScrubRegex.Matches(content);
             foreach (Match match in matches)
-            {
-                ans += match.Value;
-            }
+                builder.Append(match.Value);
 
-            return ans;
+            return builder;
         }
 
-        public static List<string> Tokenize(string content, int width = 4)
+        public static List<string> Tokenize(string content, StringBuilder builder, int width = 4)
         {
             content = content.ToLower();
-            content = Scrub(content);
-            return Slide(content, width);
+            Scrub(content, builder);
+            return Slide(builder.ToString(), width);
         }
     }
 }
