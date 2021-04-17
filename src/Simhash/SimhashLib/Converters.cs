@@ -3,9 +3,9 @@ using System.Text;
 
 namespace SimhashLib
 {
-    public class Converters
+    public static class Converters
     {
-        public static string convert_ulong_to_bin(ulong value)
+        public static string ConvertUlongToBin(ulong value)
         {
             if (value == 0) return "0";
             var b = new System.Text.StringBuilder();

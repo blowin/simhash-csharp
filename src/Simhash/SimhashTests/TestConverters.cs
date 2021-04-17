@@ -12,14 +12,14 @@ namespace SimhashTests
         public void Ulong_To_Long_Back_To_Ulong_Strings()
         {
             var theUlong = 18446744073709551615;
-            var stheUlong = Converters.convert_ulong_to_bin(theUlong);
+            var stheUlong = Converters.ConvertUlongToBin(theUlong);
             var cLong = Convert.ToInt64(stheUlong, 2);
             //save to mongo or other db using long (as ulong aren't!)
 
             //retrieve from db and then get back to ulong
             var sLong = Convert.ToString(cLong, 2);
             var fromDb = Convert.ToUInt64(sLong, 2);
-            var thedbUlong = Converters.convert_ulong_to_bin(fromDb);
+            var thedbUlong = Converters.ConvertUlongToBin(fromDb);
 
             Assert.AreEqual(stheUlong, thedbUlong);
         }
