@@ -6,90 +6,91 @@ namespace SimhashLib
 {
     public class SimhashIndex
     {
-        public static int fpSizeStatic = 64;
-        public int kDistance;
-        public int fpSize = fpSizeStatic;
-        public Dictionary<string, HashSet<string>> bucket;
-        public static List<int> offsets;
+        private const int FpSizeStatic = 64;
+        
+        private readonly int _kDistance;
+        private readonly int _fpSize = FpSizeStatic;
+        private readonly Dictionary<string, HashSet<string>> _bucket;
+        private static List<int> _offsets;
 
         //whitepaper says 64 and 3 are optimal. the ash tray says you've been up all night...
         public SimhashIndex(Dictionary<long, Simhash> objs, int f = 64, int k = 3)
         {
-            this.kDistance = k;
-            this.fpSize = f;
-            var bucketHashSet = new HashSet<string>();
-            bucket = new Dictionary<string, HashSet<string>>();
+            _kDistance = k;
+            _fpSize = f;
+            
+            _bucket = new Dictionary<string, HashSet<string>>(objs.Count);
 
-            offsets = make_offsets();
+            _offsets = MakeOffsets();
 
-            foreach (KeyValuePair<long, Simhash> q in objs)
+            foreach (var q in objs)
             {
-                add(q.Key, q.Value);
+                Add(q.Key, q.Value);
             }
         }
 
-        public HashSet<long> get_near_dups(Simhash simhash)
+        public HashSet<long> GetNearDups(Simhash simhash)
         {
             /*
             "simhash" is an instance of Simhash
             return a list of obj_id, which is in type of long (for now)
             */
-            if (simhash.fpSize != this.fpSize) throw new Exception();
+            if (Simhash.FpSize != _fpSize) throw new Exception();
             
             var ans = new HashSet<long>();
 
-            foreach (string key in get_keys(simhash))
+            foreach (var key in GetEnumerableKeys(simhash))
             {
-                if (bucket.ContainsKey(key))
+                if (!_bucket.TryGetValue(key, out var dups)) 
+                    continue;
+                
+                foreach (var dup in dups)
                 {
-                    var dups = bucket[key];
-                    foreach (var dup in dups)
+                    var parts = dup.Split(',');
+                    var fp = Convert.ToUInt64(parts[0]);
+                    var objId = Convert.ToInt64(parts[1]);
+                    var sim2 = new Simhash(fp);
+                    var d = simhash.Distance(sim2);
+                    if (d <= _kDistance)
                     {
-                        string[] parts = dup.Split(',');
-                        ulong fp = Convert.ToUInt64(parts[0]);
-                        long obj_id = Convert.ToInt64(parts[1]);
-                        var sim2 = new Simhash(fp);
-                        int d = simhash.distance(sim2);
-                        if (d <= kDistance)
-                        {
-                            ans.Add(obj_id);
-                        }
+                        ans.Add(objId);
                     }
                 }
             }
             return ans;
         }
-        public void add(long obj_id, Simhash simhash)
+        
+        public void Add(long objId, Simhash simhash)
         {
-            foreach (string key in get_keys(simhash))
+            foreach (var key in GetEnumerableKeys(simhash))
             {
-                string v = string.Format("{0},{1}", simhash.value, obj_id);
-                if (!bucket.ContainsKey(key))
+                var v = string.Format("{0},{1}", simhash.Value, objId);
+                if (!_bucket.ContainsKey(key))
                 {
                     var bucketHashSet = new HashSet<string>() { v };
-                    bucket.Add(key, bucketHashSet);
+                    _bucket.Add(key, bucketHashSet);
                 }
                 else
                 {
-                    var values = bucket[key];
+                    var values = _bucket[key];
                     values.Add(v);
                 }
             }
         }
 
-        public void delete(long obj_id, Simhash simhash)
+        public void Delete(long objId, Simhash simhash)
         {
-            foreach (string key in get_keys(simhash))
+            foreach (var key in GetEnumerableKeys(simhash))
             {
-                string v = string.Format("{0},{1}", simhash.value, obj_id);
-                if (bucket.ContainsKey(key))
+                var v = string.Format("{0},{1}", simhash.Value, objId);
+                if (_bucket.ContainsKey(key))
                 {
-                    bucket[key].Remove(v);
+                    _bucket[key].Remove(v);
                 }
             }
         }
 
-        public List<int> make_offsets()
+        public List<int> MakeOffsets()
         {
             /*
             You may optimize this method according to < http://www.wwwconference.org/www2007/papers/paper215.pdf>
@@ -97,36 +98,37 @@ namespace SimhashLib
             //int optimizedSize = 4; replace kDistance with this var.
             //
             var ans = new List<int>();
-            for (int i = 0; i < (kDistance + 1); i++)
+            for (var i = 0; i < (_kDistance + 1); i++)
             {
-                int offset = fpSize / (kDistance + 1) * i;
+                var offset = _fpSize / (_kDistance + 1) * i;
                 ans.Add(offset);
             }
             return ans;
         }
 
-        public List<string> get_the_keys(Simhash simhash)
+        public List<string> GetListKeys(Simhash simhash)
         {
-            return get_keys(simhash).ToList();
+            return GetEnumerableKeys(simhash).ToList();
         }
-        private static IEnumerable<string> get_keys(Simhash simhash)
+        
+        private static IEnumerable<string> GetEnumerableKeys(Simhash simhash)
         {
-            for (int i = 0; i < offsets.Count; i++)
+            for (var i = 0; i < _offsets.Count; i++)
             {
                 int off;
-                if (i == (offsets.Count - 1))
+                if (i == (_offsets.Count - 1))
                 {
-                    off = (fpSizeStatic - offsets[i]);
+                    off = (FpSizeStatic - _offsets[i]);
                 }
                 else
                 {
-                    off = offsets[i + 1] - offsets[i];
+                    off = _offsets[i + 1] - _offsets[i];
                 }
 
-                double m = (Math.Pow(2, off)) - 1;
-                ulong m64 = Convert.ToUInt64(m);
-                ulong offset64 = Convert.ToUInt64(offsets[i]);
-                ulong c = simhash.value >> offsets[i] & m64;
+                var m = (Math.Pow(2, off)) - 1;
+                var m64 = Convert.ToUInt64(m);
+                var offset64 = Convert.ToUInt64(_offsets[i]);
+                var c = simhash.Value >> _offsets[i] & m64;
 
                 yield return string.Format("{0},{1}", c, i);
             }
