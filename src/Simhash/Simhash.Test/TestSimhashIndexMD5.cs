@@ -12,16 +12,16 @@ namespace Simhash.Test
         
         public TestSimhashIndexMD5()
         {
+            var simhash = new SimhashLib.Simhash();
+            
             testData.Add(1, "How are you? I Am fine. blar blar blar blar blar Thanks.");
             testData.Add(2, "How are you i am fine. blar blar blar blar blar than");
             testData.Add(3, "This is simhash test.");
             testData.Add(4, "How are you i am fine. blar blar blar blar blar thank1");
-
-            var simHash = new SimhashLib.Simhash();
             
             foreach(var it in testData)
             {
-                objs.Add(it.Key, simHash.GenerateSimhash(it.Value));
+                objs.Add(it.Key, simhash.ComputeHash(it.Value));
             }
             index = new SimhashIndex(objs: objs, k: 10);
            
@@ -56,14 +56,15 @@ namespace Simhash.Test
         [Fact]
         public void Get_Keys()
         {
+            var simhash = new SimhashLib.Simhash();
+            
             var testdata = new Dictionary<long, string>();
             testdata.Add(1, "How are you? I Am fine. blar blar blar blar blar Thanks.");
 
             var simHashObjs = new Dictionary<long, SimhashResult>();
             foreach (var it in testdata)
             {
-                var simHash = new SimhashLib.Simhash();
-                simHashObjs.Add(it.Key, simHash.GenerateSimhash(it.Value));
+                simHashObjs.Add(it.Key, simhash.ComputeHash(it.Value));
             }
             var simHashIndex = new SimhashIndex(objs: simHashObjs, k: 10);
             var listOfKeys = simHashIndex.GetListKeys(simHashObjs[1]);
@@ -87,26 +88,26 @@ namespace Simhash.Test
         {
             var simhash = new SimhashLib.Simhash();
             
-            var hash = simhash.GenerateSimhash("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
+            var hash = simhash.ComputeHash("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
             var dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var hash2 = simhash.GenerateSimhash(testData[1]);
+            var hash2 = simhash.ComputeHash(testData[1]);
             index.Delete(1, hash2);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var hash3 = simhash.GenerateSimhash(testData[1]);
+            var hash3 = simhash.ComputeHash(testData[1]);
             index.Delete(1, hash3);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var hash4 = simhash.GenerateSimhash(testData[1]);
+            var hash4 = simhash.ComputeHash(testData[1]);
             index.Add(1, hash4);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var hash5 = simhash.GenerateSimhash(testData[1]);
+            var hash5 = simhash.ComputeHash(testData[1]);
             index.Add(1, hash5);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);

@@ -1,11 +1,14 @@
 ﻿using System;
+using SimhashLib.Abstraction;
 
 namespace SimhashLib
 {
-    public readonly struct SimhashResult : IEquatable<SimhashResult>
+    public readonly struct SimhashResult : IEquatable<SimhashResult>, IHashResult<SimhashResult>
     {
         public ulong Value { get; }
 
+        public bool GreatThanZero => Value > 0;
+        
         public SimhashResult(ulong value)
         {
             Value = value;
@@ -30,6 +33,8 @@ namespace SimhashLib
 
             return ans;
         }
+        
+        public SimhashResult BitwiseAnd(ulong mask) => new SimhashResult(Value & mask);
         
         public override string ToString() => Value.ToString();
     }

@@ -10,7 +10,7 @@ namespace SimhashLib
         private const int FpSizeStatic = 64;
         
         private readonly int _kDistance;
-        private readonly int _fpSize = FpSizeStatic;
+        private readonly int _fpSize;
         private readonly Dictionary<string, HashSet<string>> _bucket;
         private static List<int> _offsets;
 
@@ -47,9 +47,12 @@ namespace SimhashLib
                 foreach (var dup in dups)
                 {
                     var parts = dup.Split(',');
+                    
                     var fp = Convert.ToUInt64(parts[0]);
                     var objId = Convert.ToInt64(parts[1]);
+                    
                     var sim2 = new SimhashResult(fp);
+                    
                     var d = simhash.Distance(sim2);
                     if (d <= _kDistance)
                     {
@@ -84,10 +87,9 @@ namespace SimhashLib
             foreach (var key in GetEnumerableKeys(simhash))
             {
                 var v = BuildKey(objId, simhash, store);
-                if (_bucket.ContainsKey(key))
-                {
-                    _bucket[key].Remove(v);
-                }
+                
+                if (_bucket.TryGetValue(key, out var set))
+                    set.Remove(v);
             }
         }
 
@@ -107,11 +109,8 @@ namespace SimhashLib
             return ans;
         }
 
-        public List<string> GetListKeys(SimhashResult simhash)
-        {
-            return GetEnumerableKeys(simhash).ToList();
-        }
-        
+        public List<string> GetListKeys(SimhashResult simhash) => GetEnumerableKeys(simhash).ToList();
+
         private static IEnumerable<string> GetEnumerableKeys(SimhashResult simhash)
         {
             if(_offsets.Count <= 0)
@@ -121,22 +120,18 @@ namespace SimhashLib
             
             for (var i = 0; i < _offsets.Count; i++)
             {
-                var off = i == (_offsets.Count - 1) ? 
-                    FpSizeStatic - _offsets[i] : 
-                    _offsets[i + 1] - _offsets[i];
+                var off = i == (_offsets.Count - 1) ? FpSizeStatic - _offsets[i] : _offsets[i + 1] - _offsets[i];
 
                 var m = (Math.Pow(2, off)) - 1;
                 var m64 = Convert.ToUInt64(m);
-                var offset64 = Convert.ToUInt64(_offsets[i]);
+                
                 var c = simhash.Value >> _offsets[i] & m64;
                 
                 yield return store.Clear().Append(c).Append(',').Append(i).ToString();
             }
         }
         
-        private static string BuildKey(long objId, SimhashResult simhash, StringBuilder builder)
-        {
-            return builder.Clear().Append(simhash.Value).Append(',').Append(objId).ToString();
-        }
+        private static string BuildKey(long objId, SimhashResult simhash, StringBuilder builder) 
+            => builder.Clear().Append(simhash.Value).Append(',').Append(objId).ToString();
     }
 }

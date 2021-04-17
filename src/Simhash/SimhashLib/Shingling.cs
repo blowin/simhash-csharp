@@ -6,7 +6,7 @@ namespace SimhashLib
 {
     public static class Shingling
     {
-        private static readonly Regex ScrubRegex = new Regex(@"[\w\u4e00-\u9fcc]+", RegexOptions.Compiled);
+        private static readonly Regex ScrubRegex = new(@"[\w\u4e00-\u9fcc]+", RegexOptions.Compiled);
         
         public static List<string> Slide(string content, int width = 4)
         {

@@ -20,15 +20,16 @@ namespace Simhash.Test
 
         private SimhashIndex SetUpIndex(int kValue)
         {
+            var simhash = new SimhashLib.Simhash();
+            
             var objs = new Dictionary<long, SimhashResult>();
 
-            var simHash = new SimhashLib.Simhash();
             var builder = new StringBuilder();
             
             foreach (var it in testData)
             {
                 var features = Shingling.Tokenize(it.Value, builder.Clear(), 3);
-                objs.Add(it.Key, simHash.ComputeHash(features));
+                objs.Add(it.Key, simhash.ComputeHash(features));
 
             }
             return new SimhashIndex(objs: objs, k: kValue);
@@ -37,10 +38,11 @@ namespace Simhash.Test
         [Fact]
         public void Get_Near_Dup_Hash_Jenkins_Not_Close()
         {
-            var index = SetUpIndex(1);
-            var s = new SimhashLib.Simhash();
+            var simhash = new SimhashLib.Simhash();
             
-            var hash = s.GenerateSimhash("This is not even close to the text that is loaded by default");
+            var index = SetUpIndex(1);
+            
+            var hash = simhash.ComputeHash("This is not even close to the text that is loaded by default");
             var dups = index.GetNearDups(hash);
             
             Assert.Empty(dups);
@@ -50,12 +52,13 @@ namespace Simhash.Test
         [Fact]
         public void Get_Near_Dup_Hash_Jenkins_Find_One()
         {
+            var simhash = new SimhashLib.Simhash();
+            
             var index = SetUpIndex(1);
 
-            var s = new SimhashLib.Simhash();
             var features = Shingling.Tokenize(testData[1], new StringBuilder(),3);
             
-            var hash = s.ComputeHash(features);
+            var hash = simhash.ComputeHash(features);
             var dups = index.GetNearDups(hash);
             
             Assert.Single(dups);

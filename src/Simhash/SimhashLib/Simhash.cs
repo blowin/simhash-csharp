@@ -1,24 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Numerics;
-using System.Security.Cryptography;
+﻿using System.Collections.Generic;
 using System.Text;
+using SimhashLib.Abstraction;
 
 namespace SimhashLib
 {
-    public sealed class Simhash
+    public readonly struct Simhash : IHash<SimhashResult>
     {
         public const int FpSize = 64;
         
-        public SimhashResult GenerateSimhash(string content)
+        public SimhashResult ComputeHash(string content)
         {
             var builder = new StringBuilder(content.Length);
             var shingles = Shingling.Tokenize(content, builder);
             return ComputeHash(shingles);
         }
-
+        
         public SimhashResult ComputeHash(List<string> features)
+        {
+            return ComputeHash<Md5Hash, Md5HashResult>(features, new Md5Hash());
+        }
+
+        public static SimhashResult ComputeHash<THash, TRes>(List<string> features, THash hash)
+            where THash : IHash<TRes> 
+            where TRes : IHashResult<TRes>
         {
             var fingerprint = BuildFingerprint();
             var masks = BuildMask();
@@ -26,21 +30,21 @@ namespace SimhashLib
             foreach (var feature in features)
             {
                 //this is using MD5 which is REALLY slow
-                var h = HashFuncMd5(feature);
+                var h = hash.ComputeHash(feature);
                 const int w = 1;
                 for (var i = 0; i < FpSize; i++)
                 {
                     //convert to BigInt so we can use BitWise
-                    BigInteger bMask = masks[i];
-                    var result = h & bMask;
-                    fingerprint[i] += (result > 0) ? w : -w;
+                    var bMask = masks[i];
+                    var result = h.BitwiseAnd(bMask);
+                    fingerprint[i] += result.GreatThanZero ? w : -w;
                 }
             }
 
             return MakeFingerprint(fingerprint, masks);
         }
-
-        private SimhashResult MakeFingerprint(int[] v, ulong[] masks)
+        
+        private static SimhashResult MakeFingerprint(int[] v, ulong[] masks)
         {
             ulong ans = 0;
             for (var i = 0; i < FpSize; i++)
@@ -68,26 +72,5 @@ namespace SimhashLib
 
             return masks;
         }
-
-        private BigInteger HashFuncMd5(string x)
-        {
-            var hexValue = HashToString(x);
-            return HashStringToBigNasty(hexValue);
-        }
-
-        public string HashToString(string x)
-        {
-            using var md5Hash = MD5.Create();
-            
-            var data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(x));
-
-            var result = new StringBuilder(data.Length * 2);
-            foreach (var value in data)
-                result.AppendFormat("{0:x2}", value);
-
-            return result.ToString();
-        }
-
-        public static BigInteger HashStringToBigNasty(string x) => BigInteger.Parse(x, NumberStyles.AllowHexSpecifier);
     }
 }
