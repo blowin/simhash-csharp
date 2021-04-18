@@ -1,4 +1,5 @@
 ﻿using SimhashLib;
+using SimhashLib.Hash;
 using Xunit;
 
 namespace Simhash.Test

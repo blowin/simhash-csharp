@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using SimhashLib.Abstraction;
 
-namespace SimhashLib
+namespace SimhashLib.Hash
 {
     public readonly struct Md5HashResult : IHashResult<Md5HashResult>
     {

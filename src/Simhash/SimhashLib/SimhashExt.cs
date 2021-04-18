@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using SimhashLib.Abstraction;
+using SimhashLib.Hash;
 
 namespace SimhashLib
 {
