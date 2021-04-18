@@ -21,7 +21,7 @@ namespace Simhash.Test
             
             foreach(var it in testData)
             {
-                objs.Add(it.Key, simhash.ComputeHash(it.Value));
+                objs.Add(it.Key, simhash.ComputeHashByMd5(it.Value));
             }
             index = new SimhashIndex(objs: objs, k: 10);
            
@@ -64,7 +64,7 @@ namespace Simhash.Test
             var simHashObjs = new Dictionary<long, SimhashResult>();
             foreach (var it in testdata)
             {
-                simHashObjs.Add(it.Key, simhash.ComputeHash(it.Value));
+                simHashObjs.Add(it.Key, simhash.ComputeHashByMd5(it.Value));
             }
             var simHashIndex = new SimhashIndex(objs: simHashObjs, k: 10);
             var listOfKeys = simHashIndex.GetListKeys(simHashObjs[1]);
@@ -88,26 +88,26 @@ namespace Simhash.Test
         {
             var simhash = new SimhashLib.Simhash();
             
-            var hash = simhash.ComputeHash("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
+            var hash = simhash.ComputeHashByMd5("How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank");
             var dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var hash2 = simhash.ComputeHash(testData[1]);
+            var hash2 = simhash.ComputeHashByMd5(testData[1]);
             index.Delete(1, hash2);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var hash3 = simhash.ComputeHash(testData[1]);
+            var hash3 = simhash.ComputeHashByMd5(testData[1]);
             index.Delete(1, hash3);
             dups = index.GetNearDups(hash);
             Assert.Equal(2, dups.Count);
 
-            var hash4 = simhash.ComputeHash(testData[1]);
+            var hash4 = simhash.ComputeHashByMd5(testData[1]);
             index.Add(1, hash4);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);
 
-            var hash5 = simhash.ComputeHash(testData[1]);
+            var hash5 = simhash.ComputeHashByMd5(testData[1]);
             index.Add(1, hash5);
             dups = index.GetNearDups(hash);
             Assert.Equal(3, dups.Count);

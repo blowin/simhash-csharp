@@ -1,36 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using SimhashLib.Abstraction;
 
 namespace SimhashLib
 {
-    public readonly struct Simhash : IHash<SimhashResult>
+    public readonly struct Simhash
     {
         private static readonly ulong[] Mask = BuildMask();
         
         public const int FpSize = 64;
-        
-        public SimhashResult ComputeHash(string content)
-        {
-            var builder = new StringBuilder(content.Length);
-            var shingles = Shingling.Tokenize(content, builder);
-            return ComputeHash(shingles);
-        }
-        
-        public SimhashResult ComputeHash(List<string> features)
-        {
-            return ComputeHash<Md5Hash, Md5HashResult>(features, new Md5Hash());
-        }
 
-        public SimhashResult ComputeHash<THash, TRes>(List<string> features, THash hash)
-            where THash : IHash<TRes> 
+        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens)
+            where THash : struct, IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
             var fingerprint = new int[FpSize];
 
-            foreach (var feature in features)
+            foreach (var feature in tokens)
             {
-                var h = hash.ComputeHash(feature);
+                var h = default(THash).ComputeHash(feature);
                 const int w = 1;
                 for (var i = 0; i < FpSize; i++)
                 {

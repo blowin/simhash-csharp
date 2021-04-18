@@ -29,7 +29,7 @@ namespace Simhash.Test
             foreach (var it in testData)
             {
                 var features = Shingling.Tokenize(it.Value, builder.Clear(), 3);
-                objs.Add(it.Key, simhash.ComputeHash(features));
+                objs.Add(it.Key, simhash.ComputeHashByMd5(features));
 
             }
             return new SimhashIndex(objs: objs, k: kValue);
@@ -42,7 +42,7 @@ namespace Simhash.Test
             
             var index = SetUpIndex(1);
             
-            var hash = simhash.ComputeHash("This is not even close to the text that is loaded by default");
+            var hash = simhash.ComputeHashByMd5("This is not even close to the text that is loaded by default");
             var dups = index.GetNearDups(hash);
             
             Assert.Empty(dups);
@@ -58,7 +58,7 @@ namespace Simhash.Test
 
             var features = Shingling.Tokenize(testData[1], new StringBuilder(),3);
             
-            var hash = simhash.ComputeHash(features);
+            var hash = simhash.ComputeHashByMd5(features);
             var dups = index.GetNearDups(hash);
             
             Assert.Single(dups);
