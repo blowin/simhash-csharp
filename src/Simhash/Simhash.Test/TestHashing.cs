@@ -1,4 +1,4 @@
-﻿using SimhashLib;
+﻿using System.Text;
 using SimhashLib.Hash;
 using Xunit;
 
@@ -9,7 +9,10 @@ namespace Simhash.Test
         [Fact]
         public void Hash_To_String_Value()
         {
-            var val = Md5Hash.HashToString("aaa");
+            var content = Encoding.UTF8.GetBytes("aaa");
+            
+            var val = Md5Hash.HashToString(content);
+            
             Assert.Equal("47bce5c74f589f4867dbd57e9ca9f808", val);
         }
 

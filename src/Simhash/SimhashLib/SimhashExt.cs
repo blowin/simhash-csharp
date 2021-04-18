@@ -13,6 +13,12 @@ namespace SimhashLib
         public static SimhashResult ComputeHashByMd5(this Simhash self, List<string> tokens) 
             => self.ComputeHash<Md5Hash, Md5HashResult>(tokens, new Md5Hash());
         
+        public static SimhashResult ComputeHashByMurmurHash3(this Simhash self, string content)
+            => self.ComputeHash<MurmurHash3, Murmur3HashResult>(content, new MurmurHash3());
+        
+        public static SimhashResult ComputeHashByMurmurHash3(this Simhash self, List<string> tokens) 
+            => self.ComputeHash<MurmurHash3, Murmur3HashResult>(tokens, new MurmurHash3());
+        
         private static SimhashResult ComputeHash<THash, TRes>(this Simhash self, string content, THash hash) 
             where THash : struct, IHash<TRes> 
             where TRes : IHashResult<TRes>

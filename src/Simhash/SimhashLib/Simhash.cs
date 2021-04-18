@@ -1,23 +1,32 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using SimhashLib.Abstraction;
 
 namespace SimhashLib
 {
     public readonly struct Simhash
     {
-        private static readonly ulong[] Mask = BuildMask();
+        private static readonly long[] Mask = BuildMask();
         
         public const int FpSize = 64;
+
+        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash) 
+            where THash : IHash<TRes> 
+            where TRes : IHashResult<TRes>
+        {
+            return ComputeHash<THash, TRes>(tokens, hash, Encoding.UTF8);
+        }
         
-        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash)
-            where THash : struct, IHash<TRes> 
+        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash, Encoding encoding)
+            where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
             var fingerprint = new int[FpSize];
-
+            
             foreach (var feature in tokens)
             {
-                var h = hash.ComputeHash(feature);
+                var bytes = encoding.GetBytes(feature);
+                var h = hash.ComputeHash(bytes);
                 const int w = 1;
                 for (var i = 0; i < FpSize; i++)
                 {
@@ -32,22 +41,22 @@ namespace SimhashLib
         
         private static SimhashResult FingerprintToSimhashResult(int[] fingerprint)
         {
-            ulong ans = 0;
+            long ans = 0;
             for (var i = 0; i < FpSize; i++)
             {
                 if (fingerprint[i] >= 0)
                     ans |= Mask[i];
             }
 
-            return new SimhashResult(ans);
+            return new SimhashResult(unchecked((ulong)ans));
         }
 
-        private static ulong[] BuildMask()
+        private static long[] BuildMask()
         {
-            var masks = new ulong[FpSize];
+            var masks = new long[FpSize];
             
             for (var i = 0; i < masks.Length; i++)
-                masks[i] = (ulong) 1 << i;
+                masks[i] = (long) 1 << i;
 
             return masks;
         }
