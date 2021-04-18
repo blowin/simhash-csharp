@@ -19,8 +19,8 @@ namespace SimhashLib.Hash
     
     public readonly struct MurmurHash3 : IHash<Murmur3HashResult>
     {
-        const uint M = 0x5bd1e995;
-        const int R = 24;
+        private const uint M = 0x5bd1e995;
+        private const int R = 24;
         
         public Murmur3HashResult ComputeHash(byte[] content)
         {
