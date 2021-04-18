@@ -8,8 +8,8 @@ namespace SimhashLib
         private static readonly ulong[] Mask = BuildMask();
         
         public const int FpSize = 64;
-
-        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens)
+        
+        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash)
             where THash : struct, IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
@@ -17,7 +17,7 @@ namespace SimhashLib
 
             foreach (var feature in tokens)
             {
-                var h = default(THash).ComputeHash(feature);
+                var h = hash.ComputeHash(feature);
                 const int w = 1;
                 for (var i = 0; i < FpSize; i++)
                 {
