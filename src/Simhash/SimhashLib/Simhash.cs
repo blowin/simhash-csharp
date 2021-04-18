@@ -10,6 +10,15 @@ namespace SimhashLib
         
         public const int FpSize = 64;
 
+        public SimhashResult ComputeHash<THash, TRes>(string content, THash hash) 
+            where THash : IHash<TRes> 
+            where TRes : IHashResult<TRes>
+        {
+            var builder = new StringBuilder(content.Length);
+            var shingles = Shingling.Tokenize(content, builder);
+            return ComputeHash<THash, TRes>(shingles, hash);
+        } 
+        
         public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash) 
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>

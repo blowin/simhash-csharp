@@ -3,29 +3,29 @@ using SimhashLib.Abstraction;
 
 namespace SimhashLib.Hash
 {
-    public readonly struct Murmur3HashResult : IHashResult<Murmur3HashResult>
+    public readonly struct MurmurHash3Result : IHashResult<MurmurHash3Result>
     {
         private readonly long _val;
 
         public bool GreatThanZero => _val > 0;
         
-        public Murmur3HashResult(long val)
+        public MurmurHash3Result(long val)
         {
             _val = val;
         }
 
-        public Murmur3HashResult BitwiseAnd(long mask) => new Murmur3HashResult(_val & mask);
+        public MurmurHash3Result BitwiseAnd(long mask) => new MurmurHash3Result(_val & mask);
     }
     
-    public readonly struct MurmurHash3 : IHash<Murmur3HashResult>
+    public readonly struct MurmurHash3 : IHash<MurmurHash3Result>
     {
         private const uint M = 0x5bd1e995;
         private const int R = 24;
         
-        public Murmur3HashResult ComputeHash(byte[] content)
+        public MurmurHash3Result ComputeHash(byte[] content)
         {
             var result = Hash(content, 0xc58f1a7a);
-            return new Murmur3HashResult(result);
+            return new MurmurHash3Result(result);
         }
         
         public static uint Hash(byte[] data, uint seed)
