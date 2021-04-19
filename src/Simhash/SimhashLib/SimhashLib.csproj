@@ -3,6 +3,12 @@
 <PropertyGroup>
   <TargetFramework>netstandard2.0</TargetFramework>
   <LangVersion>latestmajor</LangVersion>
+  <Title>SimhashLib</Title>
+  <Authors>Blowin</Authors>
+  <Description>LSH</Description>
+  <PackageProjectUrl>https://github.com/blowin/simhash-csharp</PackageProjectUrl>
+  <RepositoryUrl>https://github.com/blowin/simhash-csharp</RepositoryUrl>
+  <PackageTags>hash lsh simhash md5 jenkins murmurhash murmurhash3</PackageTags>
 </PropertyGroup>
 
 <ItemGroup>
