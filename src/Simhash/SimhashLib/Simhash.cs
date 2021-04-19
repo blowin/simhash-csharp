@@ -10,26 +10,21 @@ namespace SimhashLib
         
         public const int FpSize = 64;
 
-        public SimhashResult ComputeHash<THash, TRes>(string content, THash hash) 
+        public SimhashResult ComputeHash<THash, TRes>(string content, THash hash, Encoding encoding = null) 
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
             var builder = new StringBuilder(content.Length);
             var shingles = Shingling.Tokenize(content, builder);
-            return ComputeHash<THash, TRes>(shingles, hash);
+            return ComputeHash<THash, TRes>(shingles, hash, encoding);
         } 
-        
-        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash) 
+    
+        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash, Encoding encoding = null)
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>
         {
-            return ComputeHash<THash, TRes>(tokens, hash, Encoding.UTF8);
-        }
-        
-        public SimhashResult ComputeHash<THash, TRes>(List<string> tokens, THash hash, Encoding encoding)
-            where THash : IHash<TRes> 
-            where TRes : IHashResult<TRes>
-        {
+            encoding ??= Encoding.UTF8;
+            
             var fingerprint = new int[FpSize];
             
             foreach (var feature in tokens)
