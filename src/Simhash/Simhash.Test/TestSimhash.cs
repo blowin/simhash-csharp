@@ -45,6 +45,24 @@ namespace Simhash.Test
             Short<MurmurHash3, MurmurHash3Result>(new MurmurHash3());
         }
         
+        [Fact]
+        public void DistanceJenkinsHash()
+        {
+            Distance<JenkinsHash, JenkinsHashResult>(new JenkinsHash());
+        }
+        
+        [Fact]
+        public void ChineseJenkinsHash()
+        {
+            Chinese<JenkinsHash, JenkinsHashResult>(new JenkinsHash());
+        }
+        
+        [Fact]
+        public void ShortJenkinsHash()
+        {
+            Short<JenkinsHash, JenkinsHashResult>(new JenkinsHash());
+        }
+        
         public void Distance<THash, TRes>(THash hash) 
             where THash : IHash<TRes> 
             where TRes : IHashResult<TRes>

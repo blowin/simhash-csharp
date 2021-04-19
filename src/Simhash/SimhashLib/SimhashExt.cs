@@ -19,6 +19,12 @@ namespace SimhashLib
         public static SimhashResult ComputeHashByMurmurHash3(this Simhash self, List<string> tokens) 
             => self.ComputeHash<MurmurHash3, MurmurHash3Result>(tokens, new MurmurHash3());
         
+        public static SimhashResult ComputeHashByJenkins(this Simhash self, string content, uint seed = default)
+            => self.ComputeHash<JenkinsHash, JenkinsHashResult>(content, new JenkinsHash(seed));
+        
+        public static SimhashResult ComputeHashByJenkins(this Simhash self, List<string> tokens, uint seed = default) 
+            => self.ComputeHash<JenkinsHash, JenkinsHashResult>(tokens, new JenkinsHash(seed));
+        
         private static SimhashResult ComputeHash<THash, TRes>(this Simhash self, string content, THash hash) 
             where THash : struct, IHash<TRes> 
             where TRes : IHashResult<TRes>
